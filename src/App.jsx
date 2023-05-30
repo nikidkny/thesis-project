@@ -34,18 +34,6 @@ export default function App() {
   );
 }
 
-{
-  /* <Router>
-<Routes>
-  <Route path="/login" element={<LoginPage />} />
-  <Route path="/profile" element={<UserProfilePage />} />
-  <Route path="/courses" element={<CoursesPage />} />
-  <Route path="/community" element={<CommunityPage />} />
-  <Route path="/course/:courseId/lesson/:lessonId" element={<LessonPage />} />
-  <Route path="/course/:courseId/finished" element={<FinishedPage />} />
-</Routes>
-</Router> */
-}
 // <Router>
 //   <div>
 //     <Routes>

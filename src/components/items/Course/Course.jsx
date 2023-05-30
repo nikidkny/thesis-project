@@ -60,8 +60,8 @@ export default function Course({ courseId, title, progress, metadata, duration, 
         }
 
         if (lessonData && lessonData.length > 0) {
-          const lessonTitle = encodeURIComponent(lessonData[0].title.replace(/\s+/g, "-"));
-          const courseTitle = encodeURIComponent(title.replace(/\s+/g, "-"));
+          const lessonTitle = encodeURIComponent(lessonData[0].title);
+          const courseTitle = encodeURIComponent(title);
           navigate(`/lesson/${courseId}/${lessonTitle}`); // Update the URL
         }
       } catch (error) {

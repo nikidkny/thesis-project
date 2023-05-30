@@ -10,11 +10,12 @@ export default function LessonPage() {
   useEffect(() => {
     async function fetchLessonContent() {
       try {
+        const decodedLessonTitle = decodeURIComponent(lessonTitle);
         const { data: lessonData, error: lessonError } = await supabase
           .from("lessons")
-          .select("*") // Fetch all columns
+          .select("*") // Fetch all columns from the 'lessons' table
           .eq("course_id", courseId)
-          .eq("title", lessonTitle)
+          .eq("title", decodedLessonTitle)
           .limit(1);
 
         if (lessonError) {
@@ -29,6 +30,7 @@ export default function LessonPage() {
         console.error("Error fetching lesson content:", error);
       }
     }
+
     fetchLessonContent();
   }, [courseId, lessonTitle]);
 
