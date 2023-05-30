@@ -1,0 +1,13 @@
+#button {
+  height: 40px;
+  width: auto;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: var(--color-base-blue-600);
+  background-color: var(--color-base-white-100);
+  gap: 20px;
+  padding-inline: 15px;
+}
