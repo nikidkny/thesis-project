@@ -1,6 +1,9 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "../../../../supabase";
+import Header from "../../globals/Header/Header";
+import CoursesPage from "../../../pages/CoursesPage";
+import UserProfilePage from "../../../pages/UserProfilePage";
 
 export default function Course({ courseId, title, progress, metadata, duration, description }) {
   const [lessons, setLessons] = useState([]);
@@ -60,16 +63,13 @@ export default function Course({ courseId, title, progress, metadata, duration, 
         }
 
         if (lessonData && lessonData.length > 0) {
-          const lessonTitle = encodeURIComponent(lessonData[0].title);
-          const courseTitle = encodeURIComponent(title);
-          navigate(`/lesson/${courseId}/${lessonTitle}`); // Update the URL
+          navigate(`/lesson/${courseId}/${lessonId}`); // Update the URL
         }
       } catch (error) {
         console.error("Error fetching lesson title:", error);
       }
     }
   };
-
   return (
     <div className="course">
       <h5>{title}</h5>
@@ -77,8 +77,10 @@ export default function Course({ courseId, title, progress, metadata, duration, 
       {duration && <p>Last Lesson: {duration}</p>}
       {description && <p>{description}</p>}
       {metadata && metadata.tag && <p>{metadata.tag}</p>}
-      <button onClick={handleButtonClick}>Start Lesson</button>
-      {lessons.length > 0 && (
+      {UserProfilePage && <button onClick={handleButtonClick}>Continue lesson</button>}
+      {!UserProfilePage && <button onClick={handleButtonClick}>Start lesson</button>}
+
+      {/* {lessons.length > 0 && (
         <div>
           <h6>Lessons:</h6>
           <ul>
@@ -87,7 +89,7 @@ export default function Course({ courseId, title, progress, metadata, duration, 
             ))}
           </ul>
         </div>
-      )}
+      )} */}
     </div>
   );
 }

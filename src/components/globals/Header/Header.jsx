@@ -30,11 +30,11 @@ const Header = ({ className, theme }) => {
         </div>
       )}
       {isLoginPage && (
-        <li>
-          <Link to="/">
+        <div>
+          <Link to="/login">
             <Logo></Logo>
           </Link>
-        </li>
+        </div>
       )}
       <Line />
     </nav>

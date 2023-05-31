@@ -2,7 +2,7 @@ import classNames from "classnames";
 import Header from "../components/globals/Header/Header";
 import Line from "../components/globals/Line/Line";
 import Course from "../components/items/Course/Course";
-import AssignedCourse from "../components/items/AssignedCourse/AssignedCourse";
+// import AssignedCourse from "../components/items/AssignedCourse/AssignedCourse";
 import Footer from "../components/globals/Footer/Footer";
 import { useState, useEffect } from "react";
 import { supabase } from "../../supabase";
@@ -63,7 +63,6 @@ const UserProfilePage = ({ className, days, goal }) => {
         {courses.map((course) => {
           const courseProgress = progress.find((item) => item.course_id === course.id);
           const progressPercentage = courseProgress ? courseProgress.progress_percentage : 0;
-
           return (
             <Course
               key={course.id}
