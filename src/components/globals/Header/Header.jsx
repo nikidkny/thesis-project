@@ -10,9 +10,9 @@ const Header = ({ className, theme }) => {
   const isLoginPage = location.pathname === "/login";
   var classes = classNames([className, "header", `header-${theme}`]);
   return (
-    <nav className={classes}>
+    <header className={classes}>
       {!isLoginPage && (
-        <div>
+        <nav>
           <Link to="/profile">
             <Logo></Logo>
           </Link>
@@ -27,17 +27,17 @@ const Header = ({ className, theme }) => {
               <Link to="/profile">Profile</Link>
             </li>
           </ul>
-        </div>
+        </nav>
       )}
       {isLoginPage && (
-        <div>
+        <nav>
           <Link to="/login">
             <Logo></Logo>
           </Link>
-        </div>
+        </nav>
       )}
       <Line />
-    </nav>
+    </header>
   );
 };
 Header.PropType = {

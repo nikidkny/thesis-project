@@ -1,95 +1,48 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
 import { supabase } from "../../../../supabase";
-import Header from "../../globals/Header/Header";
-import CoursesPage from "../../../pages/CoursesPage";
-import UserProfilePage from "../../../pages/UserProfilePage";
 
-export default function Course({ courseId, title, progress, metadata, duration, description }) {
-  const [lessons, setLessons] = useState([]);
+export default function Course({ courseId, title, description, metadata, enrolled }) {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchLessons() {
-      try {
-        const { data, error } = await supabase
-          .from("lesson_groups")
-          .select("lesson_id")
-          .eq("course_id", courseId)
-          .order("order_number", { ascending: true });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        const lessonIds = data.map((lesson) => lesson.lesson_id);
-
-        const { data: lessonData, error: lessonError } = await supabase
-          .from("lessons")
-          .select("id, title")
-          .in("id", lessonIds);
-
-        if (lessonError) {
-          throw new Error(lessonError.message);
-        }
-
-        setLessons(lessonData);
-      } catch (error) {
-        console.error("Error fetching lessons:", error);
-      }
-    }
-
-    fetchLessons();
-  }, [courseId]);
-
-  const handleButtonClick = async () => {
-    if (lessons.length > 0) {
-      const firstLesson = lessons[0];
-      const lessonId = firstLesson.id;
-
-      console.log("Lesson ID:", lessonId);
-
-      try {
-        const { data: lessonData, error: lessonError } = await supabase
-          .from("lessons")
-          .select("title")
-          .eq("id", lessonId)
-          .limit(1);
-
-        console.log("Lesson Data:", lessonData);
-
-        if (lessonError) {
-          throw new Error(lessonError.message);
-        }
-
-        if (lessonData && lessonData.length > 0) {
-          navigate(`/lesson/${courseId}/${lessonId}`); // Update the URL
-        }
-      } catch (error) {
-        console.error("Error fetching lesson title:", error);
-      }
+  const handleButtonClick = () => {
+    if (enrolled) {
+      navigate(`/courses/${courseId}/lessons`);
+    } else {
+      enrollInCourse();
     }
   };
+
+  const enrollInCourse = async () => {
+    try {
+      const { error } = await supabase.from("enrollments").insert([
+        {
+          user_id: supabase.auth.user().id,
+          course_id: courseId,
+        },
+      ]);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      navigate(`/courses/${courseId}/lessons`);
+    } catch (error) {
+      console.error("Error enrolling in course:", error);
+    }
+  };
+
   return (
     <div className="course">
-      <h5>{title}</h5>
-      {progress && <p>Progress: {progress} %</p>}
-      {duration && <p>Last Lesson: {duration}</p>}
-      {description && <p>{description}</p>}
-      {metadata && metadata.tag && <p>{metadata.tag}</p>}
-      {UserProfilePage && <button onClick={handleButtonClick}>Continue lesson</button>}
-      {!UserProfilePage && <button onClick={handleButtonClick}>Start lesson</button>}
-
-      {/* {lessons.length > 0 && (
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <button onClick={handleButtonClick}>{enrolled ? "Start Course" : "Enroll"}</button>
+      {metadata && (
         <div>
-          <h6>Lessons:</h6>
-          <ul>
-            {lessons.map((lesson) => (
-              <li key={lesson.id}>{lesson.title}</li>
-            ))}
-          </ul>
+          <h5>Metadata:</h5>
+          <p>{metadata}</p>
         </div>
-      )} */}
+      )}
+      <Link to={`/courses/${courseId}/progress`}>View Progress</Link>
     </div>
   );
 }

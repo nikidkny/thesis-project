@@ -1,22 +1,21 @@
+import React, { useState, useEffect } from "react";
 import classNames from "classnames";
 import Header from "../components/globals/Header/Header";
-import SearchBar from "../components/items/SearchBar/SearchBar";
 import Line from "../components/globals/Line/Line";
 import Course from "../components/items/Course/Course";
-import { useState, useEffect } from "react";
 import { supabase } from "../../supabase";
 import InputCheckbox from "../components/items/InputCheckbox/InputCheckbox";
 
 const CoursesPage = ({ className }) => {
   const [courses, setCourses] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const classes = classNames([className, "courses"]);
 
   useEffect(() => {
     async function fetchCourses() {
       try {
         const { data, error } = await supabase.from("courses").select("*");
-        console.log(data);
 
         if (error) {
           throw new Error(error.message);
@@ -38,6 +37,10 @@ const CoursesPage = ({ className }) => {
         return prevTags.filter((t) => t !== tag);
       }
     });
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
   };
 
   const renderInputCheckBoxes = (courses) => {
@@ -83,32 +86,86 @@ const CoursesPage = ({ className }) => {
     return false;
   });
 
+  const searchResults = courses.filter((course) =>
+    course.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleFocus = (e) => {
+    e.target.parentNode.classList.add("search-bar--focused");
+  };
+
+  const handleBlur = (e) => {
+    e.target.parentNode.classList.remove("search-bar--focused");
+  };
   return (
     <div className={classes}>
       <Header theme="dark" />
-      <section className="hero">
-        <h1>Courses</h1>
-        <SearchBar icon="icon-search" />
-      </section>
-      <Line className="decoration" />
-      <section className="courses_content">
-        <aside>
-          <h5>Filters</h5>
-          <h5>Topic</h5>
-          {renderInputCheckBoxes(courses)}
-        </aside>
-        <div className="courses_content_course">
-          {filteredCourses.map((course) => (
-            <Course
-              key={course.id}
-              courseId={course.id}
-              title={course.title}
-              description={course.description}
-              metadata={course.metadata}
+      <div className="courses-main">
+        <div className="hero">
+          <h1>Courses</h1>
+          <label className="search-bar">
+            <input
+              className="search-bar_field"
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onFocus={handleFocus}
+              onBlur={handleBlur}
+              onChange={(e) => handleSearch(e.target.value)}
             />
-          ))}
+            <i type="icon">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                fill="currentColor"
+                className="bi bi-search"
+                viewBox="0 0 16 16"
+              >
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z" />
+              </svg>
+            </i>
+          </label>
         </div>
-      </section>
+        <Line className="decoration" />
+        <div className="courses-main_content">
+          <aside>
+            <h5>Filters</h5>
+            <h5>Topic</h5>
+            {renderInputCheckBoxes(courses)}
+          </aside>
+
+          <div className="courses-main_content_course">
+            {searchQuery ? (
+              searchResults.length === 0 ? (
+                <h3 className="no-results">No results</h3>
+              ) : (
+                searchResults.map((course) => (
+                  <Course
+                    key={course.id}
+                    courseId={course.id}
+                    title={course.title}
+                    description={course.description}
+                    metadata={course.metadata}
+                  />
+                ))
+              )
+            ) : filteredCourses.length === 0 ? (
+              <p className="no-results">No results</p>
+            ) : (
+              filteredCourses.map((course) => (
+                <Course
+                  key={course.id}
+                  courseId={course.id}
+                  title={course.title}
+                  description={course.description}
+                  metadata={course.metadata}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

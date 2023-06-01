@@ -162,17 +162,22 @@ export default function LessonPage() {
           <Header theme="dark" />
           <section className="lesson--content">
             <h3>{currentLesson.title}</h3>
-            <p>{currentLesson.description}</p>
+            <div className="paragraphs">
+              {currentLesson.description.split("\n").map((paragraph, index) => (
+                <p key={index}>{paragraph}</p>
+              ))}
+            </div>
           </section>
           <section className="lesson--media">
             <div className="lesson--media-sticky">
-              {currentLesson.image_url && <img src={currentLesson.image_url} alt="Lesson Image" />}
-              {currentLesson.video_url && <video src={currentLesson.video_url} controls />}
+              {/* {currentLesson.image_url && <img src={currentLesson.image_url} alt="Lesson Image" />}
+              {currentLesson.video_url && <video src={currentLesson.video_url} controls />} */}
               {/* Add more elements for other columns */}
-              <div>
+              <div className="page-actions">
                 {previousLesson && previousLesson.id && (
-                  <div>
+                  <div className="button-container lesson-buttons">
                     <svg
+                      className="arrow-icon left-arrow"
                       id="Layer_2"
                       xmlns="http://www.w3.org/2000/svg"
                       width="37"
@@ -183,13 +188,18 @@ export default function LessonPage() {
                         <polygon points="37 2 3 2 4 0 0 3 4 6 3 4 37 4 37 2" fill="#200bd1" />
                       </g>
                     </svg>
-                    <button onClick={handlePreviousLessonClick}>Previous Lesson</button>
+                    <button className="previous-lesson-button" onClick={handlePreviousLessonClick}>
+                      Previous Lesson
+                    </button>
                   </div>
                 )}
                 {nextLesson ? (
-                  <div>
-                    <button onClick={handleNextLessonClick}>Next Lesson </button>
+                  <div className="button-container lesson-buttons">
+                    <button className="next-lesson-button" onClick={handleNextLessonClick}>
+                      Next Lesson
+                    </button>
                     <svg
+                      className="arrow-icon right-arrow"
                       id="Layer_2"
                       xmlns="http://www.w3.org/2000/svg"
                       width="37"

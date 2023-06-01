@@ -366,6 +366,7 @@ html {
 }
 body {
   margin: 0;
+  width: fit-content;
 }
 .login {
   color: var(--color-base-white-100);
@@ -418,43 +419,86 @@ body {
   }
 }
 .courses {
-  padding: 100px;
-  background-color: var(--color-base-deep-blue);
-  color: var(--color-base-yellow-200);
-  display: grid;
-  nav {
+  // padding: 75px 0;
+  width: 85%;
+  &-main {
+    padding: 100px;
+    background-color: var(--color-base-deep-blue);
+    color: var(--color-base-yellow-200);
+    display: grid;
+    .decoration {
+      margin: 0;
+      padding: 0;
+      border: none;
+      grid-column: span 2;
+    }
+    .hero {
+      display: grid;
+      justify-content: center;
+      justify-items: center;
+      padding-bottom: 50px;
+      .search-bar {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        border-radius: var(--searchbar-border-radius);
+        padding: var(--searchbar-padding);
+        border: 1px solid transparent;
+        transition: border-color 0.2s;
+        color: var(--color-base-yellow-200);
+        border-color: var(--color-base-yellow-200);
+        &--focused {
+          border: 2px solid var(--color-base-white-100);
+        }
+        &_field {
+          border: none;
+          outline: none;
+          background-color: transparent;
+          height: 100%;
+          color: currentColor;
+          &::placeholder {
+            color: var(--color-base-yellow-200);
+          }
+        }
+      }
+    }
+    &_content {
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+
+      aside {
+        grid-column: 1;
+        width: 75%;
+        float: left;
+        display: flex;
+        flex-direction: column;
+      }
+      &_course {
+        display: grid;
+        grid-column: 2;
+        .no-results {
+          text-align: center;
+          color: var(--color-base-yellow-200);
+          margin-top: 20px;
+        }
+      }
+      .course {
+        display: grid;
+      }
+    }
+
+    .line {
+      border-top: 1px solid var(--color-base-yellow-200);
+    }
+  }
+  header {
+    background-color: var(--color-base-deep-blue);
     .line {
       border-top: 1px solid var(--color-base-white-20);
       padding: 0;
-    }
-  }
-  .line {
-    border-top: 1px solid var(--color-base-yellow-200);
-  }
-  .hero {
-    display: grid;
-    justify-content: center;
-    justify-items: center;
-    padding-bottom: 50px;
-  }
-  &_content {
-    padding: 100px;
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    aside {
-      grid-column: 1;
-      width: 50%;
-      padding-left: 15px;
-      margin-left: 15px;
-      float: left;
-      display: flex;
-      flex-direction: column;
-    }
-    &_course {
-      grid-column: 2;
-    }
-    .course {
-      display: grid;
+      min-height: 100%;
     }
   }
 }
@@ -575,9 +619,13 @@ body {
     padding: 75px 0 0 0;
     grid-template-columns: 1fr 1fr;
     &--content {
-      padding: 0 50px;
-      p {
-        padding: 0 50px;
+      padding: 0 3rem;
+      .paragraphs {
+        width: 100%;
+        p {
+          //   padding: 0 6%;
+          word-wrap: break-word;
+        }
       }
     }
     &--media {
@@ -589,17 +637,43 @@ body {
           object-fit: cover;
           width: 100%;
         }
-        button {
-          background-color: transparent;
-          color: var(--color-base-yellow-200);
-          border: none;
-        }
-        svg g polygon {
-          fill: var(--color-base-yellow-200);
+        .page-actions {
+          display: flex;
+          .button-container {
+            display: flex;
+            align-items: center;
+            button {
+              background-color: transparent;
+              color: var(--color-base-yellow-200);
+              border: none;
+            }
+            svg g polygon {
+              fill: var(--color-base-yellow-200);
+            }
+          }
+          a {
+            color: var(--color-base-yellow-200);
+          }
         }
       }
-      a {
-        color: var(--color-base-yellow-200);
+    }
+  }
+}
+@media only screen and (min-width: 1024px) {
+  .courses {
+    padding: 100px;
+    .main {
+      padding: 100px;
+    }
+    &_content {
+      aside {
+        grid-column: 1;
+        width: 50%;
+        padding-left: 50px;
+        margin-left: 15px;
+        float: left;
+        display: flex;
+        flex-direction: column;
       }
     }
   }

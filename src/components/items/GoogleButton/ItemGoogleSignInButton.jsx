@@ -1,35 +1,21 @@
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import "./ItemGoogleSignInButton.scss";
 
-export const ItemGoogleSignInButton = () => {
-  const loginUser = () => {
-    const provider = new GoogleAuthProvider();
-    const auth = getAuth();
-    signInWithPopup(auth, provider)
-      .then(() => {
-        console.log("AUTHENTICATED");
-        // Redirect logic goes here
-      })
-      .catch((err) => {
-        console.log("NOT AUTHENTICATED");
-        console.log(err);
-      });
+const ItemGoogleSignInButton = ({ onSignIn }) => {
+  const handleButtonClick = () => {
+    if (onSignIn) {
+      onSignIn();
+    }
   };
 
-  // const logoutUser = () => {
-  //   const auth = getAuth();
-  //   signOut(auth)
-  //     .then(() => {
-  //       console.log("Signed out!");
-  //     })
-  //     .catch((err) => {
-  //       console.log("Signout error", err);
-  //     });
-  // };
-
   return (
-    <div id="button" className="item-google-sign-in-button" onClick={loginUser}>
-      <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <button id="button" className="item-google-sign-in-button" onClick={handleButtonClick}>
+      <svg
+        width="18"
+        height="19"
+        viewBox="0 0 18 19"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <path
           fillRule="evenodd"
           clipRule="evenodd"
@@ -56,7 +42,7 @@ export const ItemGoogleSignInButton = () => {
         />
       </svg>
       <span>Sign in with Google</span>
-    </div>
+    </button>
   );
 };
 
