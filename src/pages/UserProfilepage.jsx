@@ -1,36 +1,43 @@
+import React, { useContext, useEffect, useState } from "react";
 import classNames from "classnames";
 import Header from "../components/globals/Header/Header";
 import Line from "../components/globals/Line/Line";
 import Course from "../components/items/Course/Course";
-import { useContext, useEffect, useState } from "react";
-import { supabase } from "../../supabase";
+import { supabase, fetchEnrollmentsByUserId, fetchAllCourses } from "../../supabase";
 import { AuthContext } from "../../AuthProvider";
 
 const UserProfilePage = ({ className, days, goal }) => {
-  var classes = classNames([className, "profile"]);
   const { user } = useContext(AuthContext);
   const [enrollments, setEnrollments] = useState([]);
+  const classes = classNames([className, "profile"]);
 
   useEffect(() => {
-    async function fetchEnrollments() {
-      try {
-        const { data, error } = await supabase
-          .from("enrollments")
-          .select("*")
-          .eq("user_id", user.id);
+    async function fetchData() {
+      if (user) {
+        const userEnrollments = await fetchEnrollmentsByUserId(user.id);
+        const courses = await fetchAllCourses();
 
-        if (error) {
-          throw new Error(error.message);
+        if (userEnrollments && courses) {
+          const courseMap = courses.reduce((map, course) => {
+            map[course.id] = course;
+            return map;
+          }, {});
+
+          const updatedEnrollments = userEnrollments.map((enrollment) => {
+            const courseId = enrollment.course_id;
+            const course = courseMap[courseId];
+            return {
+              ...enrollment,
+              course: course || null,
+            };
+          });
+
+          setEnrollments(updatedEnrollments);
         }
-        setEnrollments(data);
-      } catch (error) {
-        console.error("Error fetching enrollments:", error);
       }
     }
 
-    if (user) {
-      fetchEnrollments();
-    }
+    fetchData();
   }, [user]);
 
   return (

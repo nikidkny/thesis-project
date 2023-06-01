@@ -6,37 +6,27 @@ import CommunityPage from "./pages/CommunityPage";
 import CoursesPage from "./pages/CoursesPage";
 import LessonPage from "./pages/LessonPage";
 import FinishedPage from "./pages/FinishedPage";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import PrivateRouter from "./routes/PrivateRouter";
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 
 const App = ({ handleLogin }) => {
-  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
 
-  useEffect(() => {
-    navigate("/profile");
-  }, []); // Empty dependency array to run the effect only once
-
-  const PrivateRoute = ({ element: Element, path }) => {
-    const { isAuthenticated } = useContext(AuthContext);
-
-    return isAuthenticated ? <Element /> : <Navigate to="/login" replace={true} />;
-  };
   return (
-    <Router>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage handleLogin={handleLogin} />} />
-          <Route path="/profile" element={<PrivateRoute element={<UserProfilePage />} />} />
-          <Route path="/courses" element={<PrivateRoute element={<CoursesPage />} />} />
-          <Route path="/community" element={<PrivateRoute element={<CommunityPage />} />} />
-          <Route
-            path="/lesson/:courseId/:lessonId"
-            element={<PrivateRoute element={<LessonPage />} />}
-          />
-          <Route path="/finished/:courseId" element={<PrivateRoute element={<FinishedPage />} />} />
-        </Routes>
-      </AuthProvider>
-    </Router>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      {user ? (
+        <>
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/courses" element={<CoursesPage />} />
+          <Route path="/community" element={<CommunityPage />} />
+          <Route path="/lesson/:courseId/:lessonId" element={<LessonPage />} />
+          <Route path="/finished/:courseId" element={<FinishedPage />} />
+        </>
+      ) : (
+        <Route path="/" element={<Navigate to="/login" replace />} />
+      )}
+    </Routes>
   );
 };
 

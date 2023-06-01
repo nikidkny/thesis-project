@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { supabase } from "../../supabase";
+import { supabase, fetchLessonContent, fetchPreviousLesson, fetchNextLesson } from "../../supabase";
 import Header from "../components/globals/Header/Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightLong, faLongArrowRight } from "@fortawesome/free-solid-svg-icons";
@@ -13,134 +13,36 @@ export default function LessonPage() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    async function fetchLessonContent() {
-      try {
-        const { data: lessonData, error: lessonError } = await supabase
-          .from("lessons")
-          .select("*")
-          .eq("course_id", courseId)
-          .eq("id", parseInt(lessonId, 10))
-          .limit(1);
-
-        console.log("courseId:", courseId);
-        console.log("lessonId:", lessonId);
-        console.log("Lesson Data:", lessonData);
-        console.log("Lesson Error:", lessonError);
-
-        if (lessonError) {
-          throw new Error(lessonError.message);
-        }
-
-        if (lessonData && lessonData.length > 0) {
-          const lesson = lessonData[0];
-          setCurrentLesson(lesson);
-        }
-      } catch (error) {
-        console.error("Error fetching lesson content:", error);
+    async function fetchData() {
+      const lessonContent = await fetchLessonContent(courseId, lessonId);
+      if (lessonContent) {
+        setCurrentLesson(lessonContent);
       }
     }
 
-    fetchLessonContent();
+    fetchData();
   }, [courseId, lessonId]);
 
   useEffect(() => {
-    async function fetchPreviousLesson() {
-      try {
-        const { data: previousLessonData, error: previousLessonError } = await supabase
-          .from("lesson_groups")
-          .select("lesson_id")
-          .eq("course_id", courseId)
-          .lt("lesson_id", parseInt(lessonId, 10))
-          .order("lesson_id", { ascending: false })
-          .limit(1);
-
-        console.log("courseId:", courseId);
-        console.log("lessonId:", lessonId);
-        console.log("Lesson Data:", previousLessonData);
-        console.log("Lesson Error:", previousLessonError);
-
-        if (previousLessonError) {
-          throw new Error(previousLessonError.message);
-        }
-
-        if (previousLessonData && previousLessonData.length > 0) {
-          const previousLessonId = previousLessonData[0].lesson_id;
-          const { data: previousLessonContent, error: previousLessonContentError } = await supabase
-            .from("lessons")
-            .select("*")
-            .eq("course_id", courseId)
-            .eq("id", previousLessonId)
-            .limit(1);
-
-          if (previousLessonContentError) {
-            throw new Error(previousLessonContentError.message);
-          }
-
-          if (previousLessonContent && previousLessonContent.length > 0) {
-            const previousLesson = previousLessonContent[0];
-            setPreviousLesson(previousLesson);
-          } else {
-            setPreviousLesson(null);
-          }
-        } else {
-          setPreviousLesson(null);
-        }
-      } catch (error) {
-        console.error("Error fetching previous lesson:", error);
+    async function fetchPreviousLessonData() {
+      const previousLessonData = await fetchPreviousLesson(courseId, lessonId);
+      if (previousLessonData) {
+        setPreviousLesson(previousLessonData);
       }
     }
 
-    fetchPreviousLesson();
+    fetchPreviousLessonData();
   }, [courseId, lessonId]);
 
   useEffect(() => {
-    async function fetchNextLesson() {
-      try {
-        const { data: nextLessonData, error: nextLessonError } = await supabase
-          .from("lesson_groups")
-          .select("lesson_id")
-          .eq("course_id", courseId)
-          .gt("lesson_id", parseInt(lessonId, 10))
-          .order("lesson_id", { ascending: true })
-          .limit(1);
-
-        console.log("courseId:", courseId);
-        console.log("lessonId:", lessonId);
-        console.log("Lesson Data:", nextLessonData);
-        console.log("Lesson Error:", nextLessonError);
-
-        if (nextLessonError) {
-          throw new Error(nextLessonError.message);
-        }
-
-        if (nextLessonData && nextLessonData.length > 0) {
-          const nextLessonId = nextLessonData[0].lesson_id;
-          const { data: nextLessonContent, error: nextLessonContentError } = await supabase
-            .from("lessons")
-            .select("*")
-            .eq("course_id", courseId)
-            .eq("id", nextLessonId)
-            .limit(1);
-
-          if (nextLessonContentError) {
-            throw new Error(nextLessonContentError.message);
-          }
-
-          if (nextLessonContent && nextLessonContent.length > 0) {
-            const nextLesson = nextLessonContent[0];
-            setNextLesson(nextLesson);
-          } else {
-            setNextLesson(null);
-          }
-        } else {
-          setNextLesson(null);
-        }
-      } catch (error) {
-        console.error("Error fetching next lesson:", error);
+    async function fetchNextLessonData() {
+      const nextLessonData = await fetchNextLesson(courseId, lessonId);
+      if (nextLessonData) {
+        setNextLesson(nextLessonData);
       }
     }
 
-    fetchNextLesson();
+    fetchNextLessonData();
   }, [courseId, lessonId]);
 
   const handlePreviousLessonClick = () => {
@@ -193,7 +95,7 @@ export default function LessonPage() {
                     </button>
                   </div>
                 )}
-                {nextLesson ? (
+                {nextLesson && nextLesson.id ? (
                   <div className="button-container lesson-buttons">
                     <button className="next-lesson-button" onClick={handleNextLessonClick}>
                       Next Lesson
@@ -212,7 +114,9 @@ export default function LessonPage() {
                     </svg>
                   </div>
                 ) : (
-                  <Link to={`/finished/${courseId}`}>Finish Course</Link>
+                  <div className="button-container lesson-buttons">
+                    <Link to={`/finished/${courseId}`}>Finish Lesson</Link>
+                  </div>
                 )}
               </div>
             </div>

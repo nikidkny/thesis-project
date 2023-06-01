@@ -3,7 +3,7 @@ import classNames from "classnames";
 import Header from "../components/globals/Header/Header";
 import Line from "../components/globals/Line/Line";
 import Course from "../components/items/Course/Course";
-import { supabase } from "../../supabase";
+import { supabase, fetchAllCourses } from "../../supabase";
 import InputCheckbox from "../components/items/InputCheckbox/InputCheckbox";
 
 const CoursesPage = ({ className }) => {
@@ -13,20 +13,15 @@ const CoursesPage = ({ className }) => {
   const classes = classNames([className, "courses"]);
 
   useEffect(() => {
-    async function fetchCourses() {
-      try {
-        const { data, error } = await supabase.from("courses").select("*");
+    async function fetchData() {
+      const fetchedCourses = await fetchAllCourses();
 
-        if (error) {
-          throw new Error(error.message);
-        }
-        setCourses(data);
-      } catch (error) {
-        console.error("Error fetching courses:", error);
+      if (fetchedCourses) {
+        setCourses(fetchedCourses);
       }
     }
 
-    fetchCourses();
+    fetchData();
   }, []);
 
   const handleTagChange = (tag, checked) => {
@@ -64,6 +59,7 @@ const CoursesPage = ({ className }) => {
         });
       }
     });
+
     return allTags.map((tag, index) => (
       <InputCheckbox
         key={index}
@@ -97,6 +93,7 @@ const CoursesPage = ({ className }) => {
   const handleBlur = (e) => {
     e.target.parentNode.classList.remove("search-bar--focused");
   };
+
   return (
     <div className={classes}>
       <Header theme="dark" />
@@ -113,7 +110,7 @@ const CoursesPage = ({ className }) => {
               onBlur={handleBlur}
               onChange={(e) => handleSearch(e.target.value)}
             />
-            <i type="icon">
+            <i className="search-bar_icon">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -134,7 +131,6 @@ const CoursesPage = ({ className }) => {
             <h5>Topic</h5>
             {renderInputCheckBoxes(courses)}
           </aside>
-
           <div className="courses-main_content_course">
             {searchQuery ? (
               searchResults.length === 0 ? (

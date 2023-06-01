@@ -1,13 +1,14 @@
 import React, { createContext, useEffect, useState } from "react";
 import { supabase } from "./supabase";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const navigate = useNavigate();
+  const navto = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  console.log(navto);
 
   // Function to handle user login
   const handleLogin = async (email, password) => {
@@ -19,7 +20,28 @@ export const AuthProvider = ({ children }) => {
       }
 
       setUser(data.user);
-      navigate("/profile");
+
+      // Fetch the course_id from the table
+      const { data: courseData, error: courseError } = await supabase
+        .from("courses")
+        .select("id")
+        .single();
+
+      if (courseError) {
+        throw new Error(courseError.message);
+      }
+
+      const courseId = courseData.id; // Fetch the actual course ID from the table
+
+      // Insert enrollment record in enrollments table
+      await supabase.from("enrollments").insert([
+        {
+          user_id: parseInt(data.user.id, 10),
+          course_id: courseId,
+        },
+      ]);
+
+      navto("/profile");
     } catch (error) {
       console.error("Login error:", error.message);
     }
