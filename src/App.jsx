@@ -1,7 +1,7 @@
 import { useEffect, useContext } from "react";
 import { AuthContext, AuthProvider } from "../AuthProvider";
 import LoginPage from "./pages/LoginPage";
-import UserProfilePage from "./pages/UserProfilePage";
+import UserProfilePage from "./pages/UserProfilepage";
 import CommunityPage from "./pages/CommunityPage";
 import CoursesPage from "./pages/CoursesPage";
 import LessonPage from "./pages/LessonPage";
