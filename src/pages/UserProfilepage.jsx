@@ -6,7 +6,7 @@ import Course from "../components/items/Course/Course";
 import { supabase, fetchEnrollmentsByUserId, fetchAllCourses } from "../../supabase";
 import { AuthContext } from "../../AuthProvider";
 
-const UserProfilePage = ({ className, days, goal }) => {
+const UserProfilePage = ({ className }) => {
   const { user } = useContext(AuthContext);
   const [enrollments, setEnrollments] = useState([]);
   const classes = classNames([className, "profile"]);
@@ -17,15 +17,13 @@ const UserProfilePage = ({ className, days, goal }) => {
         const userEnrollments = await fetchEnrollmentsByUserId(user.id);
         const courses = await fetchAllCourses();
 
-        if (userEnrollments && courses) {
-          const courseMap = courses.reduce((map, course) => {
-            map[course.id] = course;
-            return map;
-          }, {});
+        console.log("userEnrollments:", userEnrollments);
+        console.log("courses:", courses);
 
+        if (userEnrollments && courses) {
           const updatedEnrollments = userEnrollments.map((enrollment) => {
             const courseId = enrollment.course_id;
-            const course = courseMap[courseId];
+            const course = courses.find((c) => c.id === courseId);
             return {
               ...enrollment,
               course: course || null,
@@ -33,12 +31,26 @@ const UserProfilePage = ({ className, days, goal }) => {
           });
 
           setEnrollments(updatedEnrollments);
+          console.log(enrollments);
         }
       }
     }
 
     fetchData();
   }, [user]);
+
+  // Store enrollments in local storage
+  useEffect(() => {
+    localStorage.setItem("enrollments", JSON.stringify(enrollments));
+  }, [enrollments]);
+
+  // Retrieve enrollments from local storage on page load
+  useEffect(() => {
+    const storedEnrollments = localStorage.getItem("enrollments");
+    if (storedEnrollments) {
+      setEnrollments(JSON.parse(storedEnrollments));
+    }
+  }, []);
 
   return (
     <div className={classes}>
@@ -47,27 +59,23 @@ const UserProfilePage = ({ className, days, goal }) => {
       <h4>My goals</h4>
       <div className="goal">
         <p>this month</p>
-        <h5>
+        {/* <h5>
           {days} Days/ {goal} Days
-        </h5>
-        <img src="src/assets/media/clippy.gif" alt="an animation of a clipper" />
+        </h5> */}
+        <img src="http://nikolettdkny.dk/images/clippy.gif" alt="an animation of a clipper" />
       </div>
       <Line />
       <div>
         <h4>My courses</h4>
-        {enrollments.map((enrollment) => {
-          const course = enrollment.course;
-          return (
-            <Course
-              key={course.id}
-              courseId={course.id}
-              title={course.title}
-              description={course.description}
-              metadata={course.metadata}
-              enrolled
-            />
-          );
-        })}
+
+        {/* <Course
+          key={course.id}
+          courseId={course.id}
+          title={course.title}
+          description={course.description}
+          metadata={course.metadata}
+          enrolled
+        /> */}
       </div>
       <Line />
     </div>
