@@ -7,10 +7,14 @@ const SUPABASE_ANON_KEY =
 // Initialize the Supabase client
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-//User
+if (typeof BigInt.prototype.toJSON !== "function") {
+  BigInt.prototype.toJSON = function () {
+    return this.toString();
+  };
+}
 // Fetch user
 async function fetchUser() {
-  const { user, error } = await supabase.auth.user();
+  const { user, error } = await supabase.auth.getUser();
 
   if (error) {
     console.error("Error fetching user:", error);
@@ -22,12 +26,17 @@ async function fetchUser() {
 
 fetchUser();
 
-//Enrollments
-
 // Fetch enrollments by user ID
 const fetchEnrollmentsByUserId = async (userId) => {
+  const userIdWithoutHyphens = userId.replace(/-/g, "");
+  const parsedUserId = BigInt("0x" + userIdWithoutHyphens.slice(0, 10));
+  console.log("userId:", userId);
+  console.log("parsedUserId:", parsedUserId);
   try {
-    const { data, error } = await supabase.from("enrollments").select("*").eq("user_id", userId);
+    const { data, error } = await supabase
+      .from("enrollments")
+      .select("*")
+      .eq("user_id", parsedUserId);
 
     if (error) {
       console.error(error);
@@ -40,6 +49,7 @@ const fetchEnrollmentsByUserId = async (userId) => {
     return null;
   }
 };
+
 // Fetch all enrollments
 const fetchEnrollments = async () => {
   try {
@@ -60,13 +70,14 @@ const fetchEnrollments = async () => {
 // Insert a new enrollment
 const insertEnrollment = async (enrollmentData) => {
   try {
-    const { data, error } = await supabase.from("enrollments").insert(enrollmentData);
-
-    if (error) {
-      console.error(error);
-      return null;
-    }
-
+    const { data, error } = await supabase.from("enrollments").insert([
+      {
+        user_id: enrollmentData.user_id,
+        course_id: enrollmentData.course_id,
+        lesson_id: enrollmentData.lesson_id,
+        completion_status: enrollmentData.completion_status,
+      },
+    ]);
     return data;
   } catch (error) {
     console.error(error);
@@ -111,156 +122,6 @@ const deleteEnrollment = async (enrollmentId) => {
   }
 };
 
-//Lessons
-// Fetch lesson content by courseId and lessonId
-const fetchLessonContent = async (courseId, lessonId) => {
-  try {
-    const { data: lessonData, error: lessonError } = await supabase
-      .from("lessons")
-      .select("*")
-      .eq("course_id", courseId)
-      .eq("id", parseInt(lessonId, 10))
-      .limit(1);
-
-    if (lessonError) {
-      console.error(lessonError);
-      return null;
-    }
-
-    if (lessonData && lessonData.length > 0) {
-      const lesson = lessonData[0];
-      return lesson;
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
-// Fetch the previous lesson by courseId and lessonId
-const fetchPreviousLesson = async (courseId, lessonId) => {
-  try {
-    const { data: previousLessonData, error: previousLessonError } = await supabase
-      .from("lesson_groups")
-      .select("lesson_id")
-      .eq("course_id", courseId)
-      .lt("lesson_id", parseInt(lessonId, 10))
-      .order("lesson_id", { ascending: false })
-      .limit(1);
-
-    if (previousLessonError) {
-      console.error(previousLessonError);
-      return null;
-    }
-
-    if (previousLessonData && previousLessonData.length > 0) {
-      const previousLessonId = previousLessonData[0].lesson_id;
-      const { data: previousLessonContent, error: previousLessonContentError } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", courseId)
-        .eq("id", previousLessonId)
-        .limit(1);
-
-      if (previousLessonContentError) {
-        console.error(previousLessonContentError);
-        return null;
-      }
-
-      if (previousLessonContent && previousLessonContent.length > 0) {
-        const previousLesson = previousLessonContent[0];
-        return previousLesson;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-// Fetch lessons for a given course
-const fetchLessonsByCourseId = async (courseId) => {
-  try {
-    const { data, error } = await supabase
-      .from("lesson_groups")
-      .select("lesson_id")
-      .eq("course_id", courseId)
-      .order("order_number", { ascending: true });
-
-    if (error) {
-      console.error(error);
-      return null;
-    }
-
-    const lessonIds = data.map((lesson) => lesson.lesson_id);
-
-    const { data: lessonData, error: lessonError } = await supabase
-      .from("lessons")
-      .select("id, title")
-      .in("id", lessonIds);
-
-    if (lessonError) {
-      console.error(lessonError);
-      return null;
-    }
-
-    return lessonData;
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-// Fetch the next lesson by courseId and lessonId
-const fetchNextLesson = async (courseId, lessonId) => {
-  try {
-    const { data: nextLessonData, error: nextLessonError } = await supabase
-      .from("lesson_groups")
-      .select("lesson_id")
-      .eq("course_id", courseId)
-      .gt("lesson_id", parseInt(lessonId, 10))
-      .order("lesson_id", { ascending: true })
-      .limit(1);
-
-    if (nextLessonError) {
-      console.error(nextLessonError);
-      return null;
-    }
-
-    if (nextLessonData && nextLessonData.length > 0) {
-      const nextLessonId = nextLessonData[0].lesson_id;
-      const { data: nextLessonContent, error: nextLessonContentError } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", courseId)
-        .eq("id", nextLessonId)
-        .limit(1);
-
-      if (nextLessonContentError) {
-        console.error(nextLessonContentError);
-        return null;
-      }
-
-      if (nextLessonContent && nextLessonContent.length > 0) {
-        const nextLesson = nextLessonContent[0];
-        return nextLesson;
-      } else {
-        return null;
-      }
-    } else {
-      return null;
-    }
-  } catch (error) {
-    console.error(error);
-    return null;
-  }
-};
-
-//Courses
 // Fetch all courses
 const fetchAllCourses = async () => {
   try {
@@ -278,30 +139,97 @@ const fetchAllCourses = async () => {
   }
 };
 
-//Posts
-//Fetch posts
-const fetchPosts = async () => {
-  const { data, error } = await supabase.from("posts").select("*");
-  if (error) {
-    throw new Error("Error fetching posts: " + error.message);
+// Fetch lesson content by lesson ID
+const fetchLessonContent = async (lessonId) => {
+  try {
+    const { data, error } = await supabase.from("lessons").select("*").eq("id", lessonId);
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
   }
-  return data;
 };
 
-console.log(supabase);
-console.log(supabase.auth);
+// Fetch the next lesson by lesson ID and course ID
+const fetchNextLesson = async (lessonId, courseId) => {
+  try {
+    const { data, error } = await supabase
+      .from("lessons")
+      .select("*")
+      .eq("course_id", courseId)
+      .gt("id", lessonId)
+      .limit(1)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    return data[0];
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+// Fetch the previous lesson by lesson ID and course ID
+const fetchPreviousLesson = async (lessonId, courseId) => {
+  try {
+    const { data, error } = await supabase
+      .from("lessons")
+      .select("*")
+      .eq("course_id", courseId)
+      .lt("id", lessonId)
+      .limit(1)
+      .order("id", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    return data[0];
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
+// Fetch posts
+const fetchPosts = async () => {
+  try {
+    const { data, error } = await supabase.from("posts").select("*");
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+};
+
 export {
   supabase,
   fetchEnrollmentsByUserId,
   fetchAllCourses,
   fetchUser,
   fetchEnrollments,
-  fetchLessonsByCourseId,
   fetchLessonContent,
   fetchNextLesson,
   fetchPreviousLesson,
-  deleteEnrollment,
   insertEnrollment,
   updateEnrollment,
+  deleteEnrollment,
   fetchPosts,
 };

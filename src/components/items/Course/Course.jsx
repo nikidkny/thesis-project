@@ -1,19 +1,32 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
-import { supabase, fetchLessonsByCourseId } from "../../../../supabase";
+import { supabase } from "../../../../supabase";
 import { AuthContext } from ".././../../../AuthProvider";
 
 export default function Course({ courseId, title, progress, metadata, duration, description }) {
   const [lessons, setLessons] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
     async function fetchData() {
-      const fetchedLessons = await fetchLessonsByCourseId(courseId);
+      try {
+        const { data, error } = await supabase
+          .from("lessons")
+          .select("*")
+          .eq("course_id", courseId);
 
-      if (fetchedLessons) {
-        setLessons(fetchedLessons);
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        setLessons(data);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -22,39 +35,24 @@ export default function Course({ courseId, title, progress, metadata, duration, 
 
   const handleButtonClick = async () => {
     if (lessons.length > 0) {
-      const firstLesson = lessons[0];
-      console.log(firstLesson.id);
-      const lessonId = parseInt(firstLesson.id, 10);
+      const firstLessonId = lessons[0].id;
+      console.log("First Lesson ID:", firstLessonId);
 
       try {
         const { data: lessonData, error: lessonError } = await supabase
           .from("lessons")
           .select("title")
-          .eq("id", lessonId)
+          .eq("id", firstLessonId)
           .limit(1);
 
         if (lessonError) {
           throw new Error(lessonError.message);
         }
 
-        if (lessonData && lessonData.length > 0) {
-          const { data: enrollmentData, error: enrollmentError } = await supabase
-            .from("enrollments")
-            .insert([
-              {
-                user_id: parseInt(user.id, 10),
-                course_id: courseId,
-                lesson_id: lessonId,
-                completion_status: false,
-              },
-            ]);
-          console.log("enrollmentData:", enrollmentData);
-          console.log("enrollmentError:", enrollmentError);
-          if (enrollmentError) {
-            throw new Error(enrollmentError.message);
-          }
+        console.log("Lesson Data:", lessonData);
 
-          navigate(`/lesson/${courseId}/${lessonId}`);
+        if (lessonData && lessonData.length > 0) {
+          navigate(`/lesson/${courseId}/${firstLessonId}`);
         } else {
           console.error("Lesson data not found or empty.");
         }
@@ -62,18 +60,20 @@ export default function Course({ courseId, title, progress, metadata, duration, 
         console.error("Error fetching lesson title:", error);
       }
     } else {
-      console.error("No lessons available for this course.");
+      console.error("Lesson data not found or empty.");
     }
   };
 
   return (
     <div className="course">
       <h5>{title}</h5>
-      {progress && <p>Progress: {progress} %</p>}
-      {duration && <p>Last Lesson: {duration}</p>}
       {description && <p>{description}</p>}
       {metadata && metadata.tag && <p>{metadata.tag}</p>}
-      <button onClick={handleButtonClick}>Start lesson</button>
+      {lessons.length > 0 ? (
+        <button onClick={handleButtonClick}>Start course</button>
+      ) : (
+        <p>No lessons available for this course.</p>
+      )}
     </div>
   );
 }

@@ -31,12 +31,12 @@ export const AuthProvider = ({ children }) => {
         throw new Error(courseError.message);
       }
 
-      const courseId = courseData.id; // Fetch the actual course ID from the table
+      const courseId = courseData.id; // Fetch the actual course id from the table
 
-      // Insert enrollment record in enrollments table
+      // Insert enrollments to table
       await supabase.from("enrollments").insert([
         {
-          user_id: parseInt(data.user.id, 10),
+          user_id: data.user.id,
           course_id: courseId,
         },
       ]);

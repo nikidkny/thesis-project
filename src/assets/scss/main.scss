@@ -631,11 +631,10 @@ body {
     &--media {
       right: 0;
       &-sticky {
-        padding-top: 50px;
         position: fixed;
         img {
           object-fit: cover;
-          width: 100%;
+          width: 80%;
         }
         .page-actions {
           display: flex;
