@@ -212,23 +212,7 @@ export default function LessonPage() {
                     </svg>
                   </div>
                 ) : (
-                  <Link to={`/profile`}>
-                    <div className="button-container lesson-buttons">
-                      <button className="next-lesson-button">Finish Course</button>
-                      <svg
-                        className="arrow-icon right-arrow"
-                        id="Layer_2"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="37"
-                        height="6"
-                        viewBox="0 0 37 6"
-                      >
-                        <g id="Layer_2-2">
-                          <polygon points="0 4 34 4 33 6 37 3 33 0 34 2 0 2 0 4" fill="#200bd1" />
-                        </g>
-                      </svg>
-                    </div>
-                  </Link>
+                  <Link to={`/profile`}>Finish Course</Link>
                 )}
               </div>
             </div>
